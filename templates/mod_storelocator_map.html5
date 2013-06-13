@@ -1,0 +1,64 @@
+
+<script>
+var map;
+
+/*var xhr = new XMLHttpRequest();
+xhr.open('GET', '/system/modules/storelocator_map/html/locations.json', true);
+xhr.onload = function() {
+    locations    =   this.responseText;
+};
+xhr.send();*/
+
+
+locations = <?php echo $this->json; ?>;
+
+function initialize() {
+    var mapOptions = {
+        zoom: 8,
+        center: new google.maps.LatLng(51.162930, 8.144886),
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+    map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+    var markers = [];
+
+    for (i = 0; i < locations.length; i++) {
+
+        var loc     =   locations[i];
+
+        marker = new google.maps.Marker({
+            position: new google.maps.LatLng(loc.latitude, loc.longitude),
+        });
+
+        var infowindow = new google.maps.InfoWindow({
+            map: map
+        });
+
+
+        google.maps.event.addListener(marker, 'click', (function(marker, i) {
+
+            var html = "<b>" + loc.name + "</b><br>" + loc.street  + "<br>" +  loc.postal  + " " +  loc.city  + "<br>" + loc.phone  + "<br>" + loc.url  + "<br>" + loc.email  + "<br>"  + loc.comment;
+
+            return function() {
+                infowindow.setContent(html);
+                infowindow.open(map, marker);
+            }
+        })(marker, i));
+
+        markers.push(marker);
+
+    }
+
+    var markerCluster = new MarkerClusterer(map, markers);
+
+}
+
+
+google.maps.event.addDomListener(window, 'load', initialize);
+
+
+
+</script>
+    
+<div id="map-canvas" style="width: 500px; height:500px;"></div>
+
