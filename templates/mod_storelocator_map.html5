@@ -2,15 +2,12 @@
 <script>
 var map;
 
-/*var xhr = new XMLHttpRequest();
-xhr.open('GET', '/system/modules/storelocator_map/html/locations.json', true);
+var xhr = new XMLHttpRequest();
+xhr.open('GET', 'system/modules/storelocator_map/html/locations.json', true);
 xhr.onload = function() {
     locations    =   this.responseText;
 };
-xhr.send();*/
-
-
-locations = <?php echo $this->json; ?>;
+xhr.send();
 
 function initialize() {
     var mapOptions = {
@@ -21,13 +18,15 @@ function initialize() {
     map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 
     var markers = [];
+    var countloc = locations.length;
 
-    for (i = 0; i < locations.length; i++) {
+    for (i = 0; i < countloc; i++) {
 
         var loc     =   locations[i];
 
         marker = new google.maps.Marker({
             position: new google.maps.LatLng(loc.latitude, loc.longitude),
+            map: map
         });
 
         var infowindow = new google.maps.InfoWindow({
@@ -36,8 +35,19 @@ function initialize() {
 
 
         google.maps.event.addListener(marker, 'click', (function(marker, i) {
+			
+			// Example for details
+            var html = "<b><a href=\"" + loc.jumpTo + "\">" + loc.name + "</a></b><br>";
 
-            var html = "<b>" + loc.name + "</b><br>" + loc.street  + "<br>" +  loc.postal  + " " +  loc.city  + "<br>" + loc.phone  + "<br>" + loc.url  + "<br>" + loc.email  + "<br>"  + loc.comment;
+			(loc.street !="") 	? html += loc.street  + "<br>" : "";
+			(loc.city !="") 	? html += loc.postal  + " " +  loc.city  + "<br>" : "";
+			(loc.phone !="") 	? html += loc.phone  + "<br>" : "";
+			(loc.url !="") 		? html += "<a href=\"" + loc.url  + "\">" + loc.url  + "</a><br>" : "";
+			(loc.email !="") 	? html += "<a href=\"mailto:" + loc.email  + "\">" + loc.email  + "</a><br>" : "";
+			(loc.phone !="") 	? html += loc.phone  + "<br>" : "";
+			(loc.jumpTo !="") 	? html += "<br><a href=\"" + loc.jumpTo + "\">mehr Informationen</a>" : "";
+
+
 
             return function() {
                 infowindow.setContent(html);
@@ -48,8 +58,15 @@ function initialize() {
         markers.push(marker);
 
     }
-
-    var markerCluster = new MarkerClusterer(map, markers);
+    //set style options for marker clusters (these are the default styles)
+    mcOptions = {styles: [
+        {
+            height: 53,
+            url: "http://google-maps-utility-library-v3.googlecode.com/svn/trunk/markerclusterer/images/m1.png",
+            width: 53
+        }
+    ]};
+    var markerCluster = new MarkerClusterer(map, markers, mcOptions);
 
 }
 
@@ -59,6 +76,7 @@ google.maps.event.addDomListener(window, 'load', initialize);
 
 
 </script>
-    
-<div id="map-canvas" style="width: 500px; height:500px;"></div>
+<section id="map-canvas" class="<?php echo $this->class; ?> block"<?php echo $this->cssID; ?><?php if ($this->style): ?> style="<?php echo $this->style; ?>"<?php endif; ?>>
+</section>
+
 

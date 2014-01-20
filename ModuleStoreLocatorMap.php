@@ -69,7 +69,7 @@ class ModuleStoreLocatorMap extends ModuleStoreLocatorList {
 
 		$this->Template = new FrontendTemplate($this->strTemplate);
 		$GLOBALS['TL_HEAD'][] = '<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>';
-		$GLOBALS['TL_HEAD'][] = '<script src="/system/modules/storelocator_map/html/markerclusterer.js"></script>';
+		$GLOBALS['TL_HEAD'][] = '<script src="system/modules/storelocator_map/html/markerclusterer.js"></script>';
 		$objStores = $this->Database->prepare(" SELECT * FROM `tl_storelocator_stores`")->execute();
 
 		$entries = array();
@@ -82,13 +82,9 @@ class ModuleStoreLocatorMap extends ModuleStoreLocatorList {
         // Temporär
         $this->Template->json   =   $json;
 
-        $file   =   new File('/system/modules/storelocator_map/html/locations.json');
+        $file   =   new File('system/modules/storelocator_map/html/locations.json');
         $file->write($json);
 
-        echo '<pre>'; print_r($entries); echo '</pre>';
-
-
-        //$this-log('TEST', TL_GENERAL);
 
 	}
 
