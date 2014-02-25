@@ -1,4 +1,4 @@
-<?php if (!defined('TL_ROOT')) die('You can not access this file directly!');
+<?php
 
 /**
  * Contao Open Source CMS
@@ -23,7 +23,7 @@
  * PHP version 5
  * @copyright  CLICKPRESS Internetagentur <www.clickpress.de>
  * @author     Stefan Schulz-Lauterbach <ssl@clickpress.de>
- * @package    storelocator_map
+ * @package    storelocator_sgv_map
  * @license    LGPL
  * @filesource
  */
@@ -36,6 +36,7 @@
 array_insert($GLOBALS['FE_MOD']['storelocator'],4, array(
 	'storelocator_map'	=> 'ModuleStoreLocatorMap'
 ));
+
 
 
 /**

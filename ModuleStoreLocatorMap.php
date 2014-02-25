@@ -57,7 +57,9 @@ class ModuleStoreLocatorMap extends ModuleStoreLocatorList {
 
 			return $objTemplate->parse();
 		}
-		
+
+
+
 		return parent::generate();
 	}
 	
@@ -68,23 +70,75 @@ class ModuleStoreLocatorMap extends ModuleStoreLocatorList {
 	protected function compile() {
 
 		$this->Template = new FrontendTemplate($this->strTemplate);
-		$GLOBALS['TL_HEAD'][] = '<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>';
+		$GLOBALS['TL_HEAD'][] = '<script src="http://maps.google.com/maps/api/js?language=de&amp;sensor=false"></script>';
 		$GLOBALS['TL_HEAD'][] = '<script src="system/modules/storelocator_map/html/markerclusterer.js"></script>';
-		$objStores = $this->Database->prepare(" SELECT * FROM `tl_storelocator_stores`")->execute();
+
+        $aCategories = array();
+        $aCategories = deserialize($this->storelocator_list_categories);
+
+		$objStores = $this->Database->prepare(" SELECT
+		                                            id, name, street, email, url, phone, fax, street, postal, city, country, opening_times, longitude, latitude
+		                                        FROM
+		                                            `tl_storelocator_stores`
+		                                        WHERE
+		                                            pid IN(?)
+		                                        ORDER BY id")
+                                    ->execute(implode(',',$aCategories));
 
 		$entries = array();
-		$entries = $objStores->fetchAllAssoc();
+
+        $i=0;
+        while ($objStores->next())
+        {
+
+            // Generate Link
+            $link = null;
+
+
+            if( $this->jumpTo ) {
+
+                $objLink = $this->Database->prepare("SELECT * FROM tl_page WHERE id = ?;")->execute($this->jumpTo);
+                $link = $this->generateFrontendUrl(
+                    $objLink->fetchAssoc()
+                    ,	( !$GLOBALS['TL_CONFIG']['useAutoItem'] ? 'store/' : '/' ).$objStores->id.'-'.standardize($objStores->name . ' ' . $objStores->city)
+                );
+            }
+
+            $entries[$i] =  array(
+                'id'        =>  $objStores->id,
+                'name'      =>  $objStores->name,
+                'street'    =>  $objStores->street,
+                'email'     =>  $objStores->email,
+                'url'       =>  $objStores->url,
+                'phone'     =>  $objStores->phone,
+                'fax'       =>  $objStores->fax,
+                'postal'    =>  $objStores->postal,
+                'city'      =>  $objStores->city,
+                'country'   =>  $objStores->country,
+                'opening_times'  =>  $objStores->opening_times,
+                'longitude'  =>  $objStores->longitude,
+                'latitude'  =>  $objStores->latitude,
+                'jumpTo'    =>  $link
+            );
+            $i++;
+        }
+
+
 
 		$this->Template->entries	=	$entries;
-
         $json   =   json_encode($entries);
 
         // Temporär
         $this->Template->json   =   $json;
-
-        $file   =   new File('system/modules/storelocator_map/html/locations.json');
+        
+        $path   =   'system/modules/storelocator_map/html/' . $this->id . '-locations.json';
+        $this->Template->path   =   $path;
+        
+        
+        //JSON schreiben // TODO: Muss noch in tl_storelocator_map zum save_callback verschoben werden!!!
+        $file   =   new File($path);
         $file->write($json);
-
+        $this->log('Neue JSON-Datei erstellt', __CLASS__.'::'.__FUNCTION__, TL_CRON);
 
 	}
 
@@ -93,8 +147,6 @@ class ModuleStoreLocatorMap extends ModuleStoreLocatorList {
         $entries = $objStores->fetchAllAssoc();
 
         $json   =   json_encode($entries);
-
-        $this->log($json, __CLASS__.'::'.__FUNCTION__, TL_GENERAL);
 
     }
 
